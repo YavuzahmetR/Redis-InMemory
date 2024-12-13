@@ -1,8 +1,11 @@
 ﻿
 @{
     ViewData["Title"] = "Show";
+    Product p = ViewBag.Products as Product;
 }
+
 
 <h1>@ViewBag.CurrentTime</h1>
 <h1>@ViewBag.Callback</h1>
+<h1>@p.Id => @p.Name => @p.Price</h1>
 
