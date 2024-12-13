@@ -12,12 +12,11 @@ namespace InMemoryCacheApp.Web.Controllers
             cacheEntryOptions.AbsoluteExpiration = DateTime.Now.AddMinutes(1);
 
             cacheEntryOptions.SlidingExpiration = TimeSpan.FromSeconds(10);
-            /* Access at exactly 51 seconds:
-                SlidingExpiration comes into play and extends the cache's duration by 10 seconds from the last access.
-                In this case, the cache is extended until the 61st second (1 minute and 1 second).
-                1 minute (60th second) limit:
-                However, since the AbsoluteExpiration limit will come into effect at the 60th second, the cache cannot exceed this limit and is deleted at the 60th second.*/
+            cacheEntryOptions.Priority = CacheItemPriority.High;
+            cacheEntryOptions.Priority = CacheItemPriority.Normal;
+            cacheEntryOptions.Priority = CacheItemPriority.Low; //deletes the caches if memory is full from low to high priority
 
+            cacheEntryOptions.Priority = CacheItemPriority.NeverRemove; //never deletes the caches with this priority 
             memoryCache.Set("CurrentTime", DateTime.Now.ToString(), cacheEntryOptions);
 
             return View();
