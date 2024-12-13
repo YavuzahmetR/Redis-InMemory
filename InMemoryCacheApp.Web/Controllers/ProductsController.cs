@@ -7,25 +7,26 @@ namespace InMemoryCacheApp.Web.Controllers
     {
         public IActionResult Index()
         {
-            if (!memoryCache.TryGetValue("run", out string time))// If the cache does not contain the key "run" assign it to "time" variable
-             {
-                memoryCache.Set<string>("run", DateTime.Now.ToString());// Set the key "run" to the current date and time create a cahce entry
-            }
-            time = memoryCache.Get<string>("run")!; //Get the value of the key "run" and assign it to the variable time
+            MemoryCacheEntryOptions cacheEntryOptions = new MemoryCacheEntryOptions();
 
-            ViewBag.run = time;// Assign the value of time to the ViewBag.run
+            cacheEntryOptions.AbsoluteExpiration = DateTime.Now.AddMinutes(1);
+
+            cacheEntryOptions.SlidingExpiration = TimeSpan.FromSeconds(10);
+            /* Access at exactly 51 seconds:
+                SlidingExpiration comes into play and extends the cache's duration by 10 seconds from the last access.
+                In this case, the cache is extended until the 61st second (1 minute and 1 second).
+                1 minute (60th second) limit:
+                However, since the AbsoluteExpiration limit will come into effect at the 60th second, the cache cannot exceed this limit and is deleted at the 60th second.*/
+
+            memoryCache.Set("CurrentTime", DateTime.Now.ToString(), cacheEntryOptions);
+
             return View();
         }
 
         public IActionResult Show()
         {
-            memoryCache.GetOrCreate<string>("zaman", entry => // Get the value of the key "zaman" or create a new cache entry(if it doesnt exists)
-            {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10); // Config of cache entry
-                return DateTime.Now.ToString(); // Return the current date and time, create a cache entry
-            });
-            memoryCache.Remove("run"); // Remove the key "run" from the cache
-            ViewBag.time =  memoryCache.Get<string>("time"); // Get the value of the key "time" and assign it to the ViewBag.time
+            memoryCache.TryGetValue("CurrentTime", out string currentTime);
+            ViewBag.CurrentTime = currentTime;
             return View();
         }
     }
