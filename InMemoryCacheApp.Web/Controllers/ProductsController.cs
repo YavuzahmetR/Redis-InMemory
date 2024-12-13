@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Mono.TextTemplating;
+using Newtonsoft.Json.Linq;
 
 namespace InMemoryCacheApp.Web.Controllers
 {
@@ -9,14 +12,16 @@ namespace InMemoryCacheApp.Web.Controllers
         {
             MemoryCacheEntryOptions cacheEntryOptions = new MemoryCacheEntryOptions();
 
-            cacheEntryOptions.AbsoluteExpiration = DateTime.Now.AddMinutes(1);
+            cacheEntryOptions.AbsoluteExpiration = DateTime.Now.AddSeconds(10);
 
             cacheEntryOptions.SlidingExpiration = TimeSpan.FromSeconds(10);
             cacheEntryOptions.Priority = CacheItemPriority.High;
-            cacheEntryOptions.Priority = CacheItemPriority.Normal;
-            cacheEntryOptions.Priority = CacheItemPriority.Low; //deletes the caches if memory is full from low to high priority
 
-            cacheEntryOptions.Priority = CacheItemPriority.NeverRemove; //never deletes the caches with this priority 
+            cacheEntryOptions.RegisterPostEvictionCallback((key, value, reason, state) =>
+            {
+                memoryCache.Set("RemovedKey", $"{key} - {value} - {reason} - {state}");
+            });
+
             memoryCache.Set("CurrentTime", DateTime.Now.ToString(), cacheEntryOptions);
 
             return View();
@@ -25,7 +30,9 @@ namespace InMemoryCacheApp.Web.Controllers
         public IActionResult Show()
         {
             memoryCache.TryGetValue("CurrentTime", out string currentTime);
+            memoryCache.TryGetValue("RemovedKey", out string callback);
             ViewBag.CurrentTime = currentTime;
+            ViewBag.Callback = callback;
             return View();
         }
     }
