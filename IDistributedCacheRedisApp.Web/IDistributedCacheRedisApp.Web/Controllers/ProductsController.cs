@@ -3,53 +3,38 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
 using System.Text.Json;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace IDistributedCacheRedisApp.Web.Controllers
 {
     public class ProductsController(IDistributedCache distributedCache) : Controller
     {
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            Product product = new()
-            {
-                Id = 1,
-                Name = "Laptop",
-                Price = 1000
-            };
 
-            Product product2 = new()
-            {
-                Id = 2,
-                Name = "Laptop2",
-                Price = 2000
-            };
+            return View();
 
-            await distributedCache.SetAsync("product:1", Encoding.UTF8.GetBytes(JsonSerializer.Serialize(product)), new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
-            });
-
-            await distributedCache.SetStringAsync("product:2", JsonSerializer.Serialize(product2), new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
-            });
+        }
+        public IActionResult Get()
+        {
 
             return View();
         }
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> ImageUrl()
         {
-            var productObject = await distributedCache.GetAsync("product:1");
-            var productObject2 = await distributedCache.GetStringAsync("product:2");
-
-            Product product = JsonSerializer.Deserialize<Product>(productObject)!;
-            Product product2 = JsonSerializer.Deserialize<Product>(productObject2)!;
-
-            ViewBag.Product = product;
-            ViewBag.Product2 = product2;
-
+            var bytes = await distributedCache.GetAsync("imageFile")!;
+            return File(bytes!, "image/jpeg");
+        }
+        public async Task<IActionResult> ImageCache()
+        {
+            string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/askim.jpg");
+            Byte[] imageFile = System.IO.File.ReadAllBytes(path);
+            await distributedCache.SetAsync("imageFile", imageFile, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
             return View();
         }
-
         public async Task<IActionResult> Remove()
         {
             await distributedCache.RemoveAsync("product:1");
