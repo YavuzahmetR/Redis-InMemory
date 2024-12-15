@@ -1,0 +1,27 @@
+﻿@model HashSet<string>
+@{
+    ViewData["Title"] = "Index";
+}
+<form enctype="application/x-www-form-urlencoded" method="post" asp-controller="SortedSetType" asp-action="DeleteScoresBetween">
+    <label for="start">Start:</label>
+    <input type="number" step="any" name="start" id="start" required />
+
+    <label for="stop">Stop:</label>
+    <input type="number" step="any" name="stop" id="stop" required />
+
+    <button type="submit" class="btn btn-outline-success">Delete Between</button>
+</form>
+<h1>Index</h1>
+<hr />
+<form enctype="application/x-www-form-urlencoded" method="post" asp-controller="SortedSetType" asp-action="AddItem">
+    <input type="text" name="name" />
+    <input type="number" name="score" />
+    <button type="submit" class="btn btn-outline-success">Add</button>
+</form>
+
+
+
+@foreach (var item in Model)
+{
+    <h2>@item <a asp-controller="SortedSetType" asp-action="DeleteItemG" asp-route-name="@item">Delete</a></h2>
+}
