@@ -1,8 +1,11 @@
 ﻿
 @{
     ViewData["Title"] = "Get";
+    Product product = ViewBag.Product as Product;   
+    Product product2 = ViewBag.Product2 as Product;   
 }
 
-<h1>@ViewBag.Name</h1>
-<h1>@ViewBag.Age</h1>
+<h1>@product.Id => @product.Name =>  @product.Price </h1>
+<h1>@product2.Id => @product2.Name =>  @product2.Price </h1>
+
 

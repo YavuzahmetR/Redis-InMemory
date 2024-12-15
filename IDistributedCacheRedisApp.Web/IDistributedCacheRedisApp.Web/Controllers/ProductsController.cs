@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using IDistributedCacheRedisApp.Web.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
+using System.Text.Json;
 
 namespace IDistributedCacheRedisApp.Web.Controllers
 {
@@ -8,38 +10,50 @@ namespace IDistributedCacheRedisApp.Web.Controllers
     {
         public async Task<IActionResult> Index()
         {
-            await distributedCache.SetAsync("name", Encoding.UTF8.GetBytes("John"), new DistributedCacheEntryOptions
+            Product product = new()
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
+                Id = 1,
+                Name = "Laptop",
+                Price = 1000
+            };
+
+            Product product2 = new()
+            {
+                Id = 2,
+                Name = "Laptop2",
+                Price = 2000
+            };
+
+            await distributedCache.SetAsync("product:1", Encoding.UTF8.GetBytes(JsonSerializer.Serialize(product)), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
             });
 
-            await distributedCache.SetStringAsync("age", "30", new DistributedCacheEntryOptions
+            await distributedCache.SetStringAsync("product:2", JsonSerializer.Serialize(product2), new DistributedCacheEntryOptions
             {
-                AbsoluteExpiration = DateTime.Now.AddMinutes(1),
-                SlidingExpiration = TimeSpan.FromSeconds(30)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1)
             });
+
             return View();
         }
         public async Task<IActionResult> Get()
         {
-            //var name = await distributedCache.GetStringAsync("name"); can be exuted like this also.
+            var productObject = await distributedCache.GetAsync("product:1");
+            var productObject2 = await distributedCache.GetStringAsync("product:2");
 
-            var name = await distributedCache.GetAsync("name"); //returns byte[]
+            Product product = JsonSerializer.Deserialize<Product>(productObject)!;
+            Product product2 = JsonSerializer.Deserialize<Product>(productObject2)!;
 
-            var nameBytes = name != null ? Encoding.UTF8.GetString(name) : null;
-
-            var age = await distributedCache.GetStringAsync("age"); //returns string
-
-            ViewBag.Name = nameBytes;
-            ViewBag.Age = age;
+            ViewBag.Product = product;
+            ViewBag.Product2 = product2;
 
             return View();
         }
 
         public async Task<IActionResult> Remove()
         {
-            await distributedCache.RemoveAsync("name");
-            await distributedCache.RemoveAsync("age");
+            await distributedCache.RemoveAsync("product:1");
+
             return View();
         }
     }
