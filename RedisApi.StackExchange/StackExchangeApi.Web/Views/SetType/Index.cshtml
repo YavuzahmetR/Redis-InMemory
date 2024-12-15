@@ -1,0 +1,18 @@
+﻿@model HashSet<string> 
+@{
+    ViewData["Title"] = "Index";
+}
+<a asp-controller="SetType" asp-action="DeleteRandom">Delete Random</a>
+<h1>Index</h1>
+<hr />
+
+<form enctype="application/x-www-form-urlencoded" method="post" asp-controller="SetType" asp-action="AddItem">
+    <input type="text" name="name" />
+    <button type="submit" class="btn btn-outline-success">Add</button>
+</form>
+
+@foreach (var item in Model)
+{
+    <h2>@item <a asp-controller="SetType" asp-action="DeleteItem" asp-route-name="@item">Delete</a></h2>
+}
+
